@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+__MACOSX/
+*.zip
+_*.py
+_*.txt
+data/
