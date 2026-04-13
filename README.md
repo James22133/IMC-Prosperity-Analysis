@@ -1,9 +1,12 @@
 # IMC Prosperity 4 — Trading Bot Analysis
 
-This repo is a pretty extensive analysis of IMC's trading challenge in which I went back and forth with cursor and claude to build (in other words - vibecoded). It's  main goal was to 1figure out how the bots on the exchange actually behave, find patterns we can exploit and build strategies around them... See below for some cool results tho.
+This repo is a pretty extensive analysis of IMC's trading challenge in which I went back and forth with cursor and claude to build (in other words - vibecoded). Its main goal was to figure out how the bots on the exchange actually behave, find patterns we can exploit and build strategies around them... See below for some cool results tho.
+
+## View the full report
+
+**[Click here to view the full analysis report with all plots](https://james22133.github.io/IMC-Prosperity-Analysis/prosperity_report.html)** | **[Notebook version](https://james22133.github.io/IMC-Prosperity-Analysis/prosperity_analysis.html)**
 
 ## What's in here
-
 **`prosperity_analysis.ipynb`** — The main notebook. It loads up the raw market data (prices + trades), crunches a *ton* of stats, and spits out plots for everything from price dynamics to order book imbalances to regime detection. If you only look at one thing, look at this.
 
 **`prosperity_analysis.html`** — Same notebook but pre-rendered as HTML, so you can view all the plots without running anything.
