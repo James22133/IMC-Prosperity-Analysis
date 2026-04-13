@@ -1,6 +1,6 @@
 # IMC Prosperity 4 — Trading Bot Analysis
 
-Hey! This repo is my deep-dive into the IMC Prosperity 4 trading challenge. The goal? Figure out how the bots on the exchange actually behave, find patterns we can exploit, and build strategies around them.
+This repo is a pretty extensive analysis of IMC's trading challenge in which I went back and forth with cursor and claude to build (in other words - vibecoded). It's  main goal was to 1figure out how the bots on the exchange actually behave, find patterns we can exploit and build strategies around them... See below for some cool results tho.
 
 ## What's in here
 
