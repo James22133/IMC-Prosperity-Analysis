@@ -1,0 +1,173 @@
+=== IMC Prosperity 4 — Round 1 Deep Dive Report ===
+Data directory: C:\Users\HP ZBOOK\Downloads\IMC Prosperity\prosperity4\ROUND1
+
+--- Problem 5: 10k-iteration / day structure ---
+  Day -2: unique timestamps = 10000, min=0, max=999900
+  Day -1: unique timestamps = 10000, min=0, max=999900
+  Day 0: unique timestamps = 10000, min=0, max=999900
+  Pepper day -2 end mid=11001.50 @ts=999900  |  day -1 start mid=10998.50 @ts=0  (gap in level: -3.00)
+  Pepper day -1 end mid=11998.00 @ts=999900  |  day 0 start mid=11998.50 @ts=0  (gap in level: +0.50)
+  Note: CSVs are independent sessions; mids do NOT continue like a single long series.
+  traderData / position reset per competition rules are engine-side (not in CSV).
+
+--- Problem 1: INTARIAN_PEPPER_ROOT — trend vs mean-revert ---
+  Figure: intarian_mid_3days.png
+  Day -2: start=9998.50 end=11001.50 net=+1003.00  mean(dr)=+0.108844  ticks=9216
+  Day -1: start=10998.50 end=11998.00 net=+999.50  mean(dr)=+0.108429  ticks=9219
+  Day 0: start=11998.50 end=13000.00 net=+1001.50  mean(dr)=+0.108247  ticks=9253
+  POOLED across all days (misleading if sessions reset): mean(dr)=+0.108408
+  Day -2 ADF on mid: stat=-0.227 p=0.9352  |  ADF on linear-detrended mid: stat=-4.256 p=0.0005
+  Day -1 ADF on mid: stat=-0.856 p=0.8021  |  ADF on linear-detrended mid: stat=-3.947 p=0.0017
+  Day 0 ADF on mid: stat=-0.489 p=0.8941  |  ADF on linear-detrended mid: stat=-4.327 p=0.0004
+  Lag-1 autocorr of 2-tick returns: 0.0085
+  Lag-1 autocorr of 3-tick returns: 0.0172
+  Lag-1 autocorr of 5-tick returns: 0.0098
+  Lag-1 autocorr of 10-tick returns: 0.0030
+  Regime (quarters of each day by row index):
+    day -2 Q1: mean(d_mid)=+0.10964 std=1.4884 net=+252.50
+    day -2 Q2: mean(d_mid)=+0.10877 std=1.6133 net=+250.50
+    day -2 Q3: mean(d_mid)=+0.10769 std=1.5896 net=+248.00
+    day -2 Q4: mean(d_mid)=+0.10921 std=1.6188 net=+251.50
+    day -1 Q1: mean(d_mid)=+0.11051 std=1.7493 net=+254.50
+    day -1 Q2: mean(d_mid)=+0.10829 std=1.7244 net=+249.50
+    day -1 Q3: mean(d_mid)=+0.10764 std=1.8551 net=+248.00
+    day -1 Q4: mean(d_mid)=+0.10677 std=1.7736 net=+246.00
+    day 0 Q1: mean(d_mid)=+0.10921 std=1.7712 net=+252.50
+    day 0 Q2: mean(d_mid)=+0.10770 std=1.8856 net=+249.00
+    day 0 Q3: mean(d_mid)=+0.10770 std=1.8832 net=+249.00
+    day 0 Q4: mean(d_mid)=+0.10722 std=1.9526 net=+248.00
+  SMA vs +1tick return: corr(mid-SMA, fwd) per day (valid L1 only):
+    --- day -2 ---
+      N= 3  corr(mid-SMA,+1tick)=-0.5680  (= -corr(SMA-mid,+1tick))
+      N= 5  corr(mid-SMA,+1tick)=-0.6252  (= -corr(SMA-mid,+1tick))
+      N= 7  corr(mid-SMA,+1tick)=-0.6474  (= -corr(SMA-mid,+1tick))
+      N=10  corr(mid-SMA,+1tick)=-0.6669  (= -corr(SMA-mid,+1tick))
+      N=15  corr(mid-SMA,+1tick)=-0.6755  (= -corr(SMA-mid,+1tick))
+      N=20  corr(mid-SMA,+1tick)=-0.6827  (= -corr(SMA-mid,+1tick))
+      N=30  corr(mid-SMA,+1tick)=-0.6879  (= -corr(SMA-mid,+1tick))
+      N=50  corr(mid-SMA,+1tick)=-0.6892  (= -corr(SMA-mid,+1tick))
+      strongest |corr| day -2: N=50 rho=-0.6892
+    --- day -1 ---
+      N= 3  corr(mid-SMA,+1tick)=-0.5690  (= -corr(SMA-mid,+1tick))
+      N= 5  corr(mid-SMA,+1tick)=-0.6263  (= -corr(SMA-mid,+1tick))
+      N= 7  corr(mid-SMA,+1tick)=-0.6503  (= -corr(SMA-mid,+1tick))
+      N=10  corr(mid-SMA,+1tick)=-0.6688  (= -corr(SMA-mid,+1tick))
+      N=15  corr(mid-SMA,+1tick)=-0.6790  (= -corr(SMA-mid,+1tick))
+      N=20  corr(mid-SMA,+1tick)=-0.6875  (= -corr(SMA-mid,+1tick))
+      N=30  corr(mid-SMA,+1tick)=-0.6924  (= -corr(SMA-mid,+1tick))
+      N=50  corr(mid-SMA,+1tick)=-0.6939  (= -corr(SMA-mid,+1tick))
+      strongest |corr| day -1: N=50 rho=-0.6939
+    --- day 0 ---
+      N= 3  corr(mid-SMA,+1tick)=-0.5665  (= -corr(SMA-mid,+1tick))
+      N= 5  corr(mid-SMA,+1tick)=-0.6213  (= -corr(SMA-mid,+1tick))
+      N= 7  corr(mid-SMA,+1tick)=-0.6451  (= -corr(SMA-mid,+1tick))
+      N=10  corr(mid-SMA,+1tick)=-0.6625  (= -corr(SMA-mid,+1tick))
+      N=15  corr(mid-SMA,+1tick)=-0.6748  (= -corr(SMA-mid,+1tick))
+      N=20  corr(mid-SMA,+1tick)=-0.6818  (= -corr(SMA-mid,+1tick))
+      N=30  corr(mid-SMA,+1tick)=-0.6893  (= -corr(SMA-mid,+1tick))
+      N=50  corr(mid-SMA,+1tick)=-0.6924  (= -corr(SMA-mid,+1tick))
+      strongest |corr| day 0: N=50 rho=-0.6924
+  Overall strongest |corr(mid-SMA,+1tick)|: day -1 N=50 rho=-0.6939
+
+--- Problem 2: Hurst (R/S on log-return segments) + variance ratio ---
+  ASH_COATED_OSMIUM: Hurst (R/S on log returns, n=27643): 0.280
+    VR(k= 2) = 0.5107  (MR-ish)
+    VR(k= 5) = 0.2165  (MR-ish)
+    VR(k=10) = 0.1318  (MR-ish)
+    VR(k=20) = 0.0717  (MR-ish)
+    VR(k=50) = 0.0447  (MR-ish)
+  INTARIAN_PEPPER_ROOT: Hurst (R/S on log returns, n=27687): 0.295
+    VR(k= 2) = 0.5184  (MR-ish)
+    VR(k= 5) = 0.2067  (MR-ish)
+    VR(k=10) = 0.1085  (MR-ish)
+    VR(k=20) = 0.0504  (MR-ish)
+    VR(k=50) = 0.0217  (MR-ish)
+  ASH reversion times (ticks until |mid-10000|<1 after exceeding X):
+    day -2 X=2: mean ticks to near-peg=26.2 (n=279)
+    day -2 X=3: mean ticks to near-peg=33.6 (n=202)
+    day -2 X=5: mean ticks to near-peg=50.2 (n=109)
+    day -2 X=8: mean ticks to near-peg=88.4 (n=42)
+    day -1 X=2: mean ticks to near-peg=18.4 (n=358)
+    day -1 X=3: mean ticks to near-peg=21.8 (n=267)
+    day -1 X=5: mean ticks to near-peg=33.8 (n=124)
+    day -1 X=8: mean ticks to near-peg=72.4 (n=32)
+    day 0 X=2: mean ticks to near-peg=21.0 (n=312)
+    day 0 X=3: mean ticks to near-peg=27.2 (n=218)
+    day 0 X=5: mean ticks to near-peg=40.6 (n=112)
+    day 0 X=8: mean ticks to near-peg=109.8 (n=24)
+
+--- Problem 3: autocorr / multi-tick (bounce diagnostic) ---
+  ASH_COATED_OSMIUM: lag-1 acf 1-tick ret = -0.4944
+    lag-1 acf 2-tick returns: +0.0285
+    lag-1 acf 5-tick returns: +0.1027
+    lag-1 acf 10-tick returns: +0.1984
+    E[mid(t+1) - best_bid(t)] = +8.0878
+    E[mid(t+5) - best_bid(t)] = +8.0890
+    E[mid(t+10) - best_bid(t)] = +8.0902
+  INTARIAN_PEPPER_ROOT: lag-1 acf 1-tick ret = -0.4882
+    lag-1 acf 2-tick returns: +0.0085
+    lag-1 acf 5-tick returns: +0.0098
+    lag-1 acf 10-tick returns: +0.0030
+    E[mid(t+1) - best_bid(t)] = +6.6316
+    E[mid(t+5) - best_bid(t)] = +7.0647
+    E[mid(t+10) - best_bid(t)] = +7.6060
+  Pepper trade-price consecutive diff acf: -0.0148 (n=1010)
+
+--- Problem 4: ASH_COATED_OSMIUM microstructure ---
+  L1 quote churn (any change): 67.92% of valid-L1 ticks
+  Ticks with ba<=10003 & bb>=9997: 0.10%
+  Figure: ash_trade_prices.png
+  Bot trade vs mid (nearest tick): mean=+0.174 std=8.200
+  |trade-mid| percentiles (ASH, empirical bot prints): p50=8.00 p75=9.00 p90=9.50 p95=9.50
+  ASH trade count (all days): 1265
+  Figures: ash_l1_histograms.png
+
+--- Problem 6: INTARIAN extended signals (pooled valid L1) ---
+  mom(N=3) vs +1tick ret: rho=-0.4988
+  mom(N=5) vs +1tick ret: rho=-0.5018
+  mom(N=10) vs +1tick ret: rho=-0.5005
+  mom(N=20) vs +1tick ret: rho=-0.4952
+  mom(N=50) vs +1tick ret: rho=-0.4953
+  mom(N=100) vs +1tick ret: rho=-0.4954
+  MR sma3 vs fwd_1t: rho=+0.5679
+  MR sma3 vs fwd_5t: rho=+0.5783
+  MR sma3 vs fwd_10t: rho=+0.5754
+  MR sma5 vs fwd_1t: rho=+0.6241
+  MR sma5 vs fwd_5t: rho=+0.6373
+  MR sma5 vs fwd_10t: rho=+0.6273
+  MR sma10 vs fwd_1t: rho=+0.6659
+  MR sma10 vs fwd_5t: rho=+0.6737
+  MR sma10 vs fwd_10t: rho=+0.6682
+  MR sma20 vs fwd_1t: rho=+0.6840
+  MR sma20 vs fwd_5t: rho=+0.6919
+  MR sma20 vs fwd_10t: rho=+0.6879
+  L1 imb vs +1tick ret: rho=+0.5630
+  L1 imb vs +5tick ret: rho=+0.5594
+  OLS +1tick ret ~ 1 + mom50 + (SMA10-mid) + imb: R²=0.4552
+    coef: const=+0.89493 mom50=-0.076789 mr10=+0.762852 imb=+1.188835
+  spread(t) vs forward 20-tick abs-ret vol: rho=-0.0224
+
+--- Problem 7: simplified historical diagnostics (not full exchange sim) ---
+  Strategy A diagnostics (ASH L1 vs fair=10000): day -2 {'ticks_ask_below_fair': 760, 'ticks_bid_above_fair': 161, 'ticks_either_edge': 921}
+  Strategy A diagnostics (ASH L1 vs fair=10000): day -1 {'ticks_ask_below_fair': 173, 'ticks_bid_above_fair': 290, 'ticks_either_edge': 463}
+  Strategy A diagnostics (ASH L1 vs fair=10000): day 0 {'ticks_ask_below_fair': 444, 'ticks_bid_above_fair': 840, 'ticks_either_edge': 1284}
+  Pepper toy: MR pos=clip(SMA5-mid,±1) scaled PnL proxy=+14330.3 | mom sign(mid-SMA5) proxy=-13671.5
+  Pepper toy: MR pos=clip(SMA10-mid,±1) scaled PnL proxy=+14019.5 | mom sign(mid-SMA10) proxy=-11894.5
+  Pepper toy: MR pos=clip(SMA20-mid,±1) scaled PnL proxy=+11081.3 | mom sign(mid-SMA20) proxy=-4509.5
+  Pepper toy EMA(5) vs EMA(30) sign * next-tick move proxy=-73.5
+
+=== DELIVERABLE SUMMARY (evidence-led) ===
+1) Corrected archetypes:
+   - ASH_COATED_OSMIUM: PEG / structural MM. R/S Hurst on log-returns ~0.28 (bounded); VR<1 at all k (microstructure).
+     Reversion to 10000 after |mid-10000|>2 typ. ~18–26 ticks (see table).
+   - INTARIAN_PEPPER_ROOT: WITHIN each ~10k-tick session, log price is ~linear trend + stationary residuals
+     (ADF on linear-detrended mid p<0.01 all days). Raw mid ADF fails (unit root) — NOT 'simple mean revert'.
+     Day boundaries: ~+1000 level reset between -2→-1 and -1→0; pooled +0.108 mean tick return is almost
+     entirely intra-session drift, not a continuous 3000-tick random walk.
+2) Hurst: prior impossible values fixed by R/S on full-length log returns + VR table (both products).
+3) Lag-1 mid return acf ~ -0.49 collapses toward ~0 by 2-tick returns; trade-price diff acf ~ -0.015 (pepper).
+4) ASH bot: L1 churn ~68% vs tutorial EMERALDS; trades vs mid mean cross ~+0.17 (see PNGs for full distribution).
+5) INTARIAN signals (pooled L1, confounded with bounce): SMA−mid positively correlates with fwd returns;
+   mom(mid−mid_50) negatively correlates at 1-tick; OLS R²~0.45 — use session-demeaned / detrended features.
+6) Strategy coding: do not use pooled SMA as quote_fair across days; per session use trend-aware fair
+   (e.g. wall_mid / short EMA for direction) + residual reversion, not raw SMA-10 alone.

@@ -1,0 +1,190 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>IMC Prosperity 4 — Round 1 Analysis Report</title><style>
+    :root { --bg:#0f1419; --panel:#1a2332; --text:#e7ecf3; --muted:#9aa8b8; --accent:#5eb8ff; --border:#2d3d52; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text);
+           line-height: 1.55; margin: 0; padding: 0 0 4rem; }
+    header { background: linear-gradient(135deg, #1a2a3d, #0f1419); border-bottom: 1px solid var(--border);
+             padding: 2rem 1.5rem 1.5rem; }
+    header h1 { margin: 0 0 0.5rem; font-size: 1.65rem; font-weight: 600; }
+    header p { margin: 0; color: var(--muted); max-width: 56rem; }
+    nav { position: sticky; top: 0; z-index: 10; background: rgba(15,20,25,0.92); backdrop-filter: blur(8px);
+           border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; }
+    nav a { color: var(--accent); text-decoration: none; margin-right: 1.1rem; font-size: 0.9rem; }
+    nav a:hover { text-decoration: underline; }
+    main { max-width: 58rem; margin: 0 auto; padding: 1.5rem 1rem; }
+    section { margin-bottom: 2.75rem; }
+    section h2 { font-size: 1.2rem; border-left: 4px solid var(--accent); padding-left: 0.65rem; margin-top: 0; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.15rem; margin: 1rem 0; }
+    .card p:last-child { margin-bottom: 0; }
+    figure { margin: 1rem 0; background: #111820; border-radius: 8px; padding: 0.5rem; border: 1px solid var(--border); }
+    figure img { width: 100%; height: auto; display: block; border-radius: 4px; }
+    figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+    ul.key { color: var(--muted); padding-left: 1.2rem; }
+    ul.key li { margin: 0.35rem 0; }
+    pre.stats { font-size: 0.78rem; background: #111820; border: 1px solid var(--border); padding: 1rem; overflow-x: auto; border-radius: 8px; color: #c5d4e0; }
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 2rem 1rem; border-top: 1px solid var(--border); }
+    </style></head><body><header><h1>IMC Prosperity 4 — Round 1 Deep Dive</h1><p>Price &amp; market trade CSVs · exploratory patterns · microstructure diagnostics</p></header><nav>
+      <a href="#intro">Intro</a>
+      <a href="#sessions-raw">INTARIAN raw</a>
+      <a href="#sessions-norm">INTARIAN rebased</a>
+      <a href="#detrend-example">Detrend</a>
+      <a href="#acf">ACF</a>
+      <a href="#vr">VR</a>
+      <a href="#hurst-ash">Hurst</a>
+      <a href="#ash-dev">ASH</a>
+      <a href="#pepper-spread">Spreads</a>
+      <a href="#sig-hex">Signals</a>
+      <a href="#cross">Cross</a>
+      <a href="#stats">Numbers</a>
+      <a href="#legacy">+ deep_dive</a>
+    </nav><main><section id="intro"><h2>Introduction</h2><div class="card"><p>This report summarises Round 1 official CSVs (three independent <strong>10 000-tick</strong> sessions)
+    for <code>ASH_COATED_OSMIUM</code> and <code>INTARIAN_PEPPER_ROOT</code>. It mirrors the style of a tutorial-round
+    write-up: narrative, caveats, and many static plots for offline review.</p>
+    <ul class="key">
+      <li><strong>Do not pool days</strong> as one price process — each day starts a new level band (especially INTARIAN).</li>
+      <li><strong>Mid return lag-1 autocorrelation ≈ −0.5</strong> is largely <strong>bid–ask bounce</strong> in the mid proxy, not alpha.</li>
+      <li>Use <strong>detrended / session</strong> statistics for INTARIAN; use <strong>peg + microstructure</strong> for ASH.</li>
+    </ul></div></section>
+        <section id="sessions-raw">
+          <h2>INTARIAN — three sessions &amp; intra-session drift</h2>
+          <div class="card"><p>Overlay shows each day’s mid on the same timestamp axis. The rebased chart removes the ~+1000 level shift between days so you can compare <em>shape</em> of intra-session drift.</p></div>
+          
+            <figure id="fig-intarian_sessions">
+              <img src="html_figures/intarian_sessions.png" alt="INTARIAN — three sessions &amp; intra-session drift" loading="lazy" />
+              <figcaption>Raw mids: upward drift within each session is visible; day boundaries are not continuous walks.</figcaption>
+            </figure>
+        </section>
+        <section id="sessions-norm">
+          <h2>INTARIAN — rebased to session open</h2>
+          <div class="card"><p>Same data as above, minus each session’s first mid — highlights parallel drift shapes.</p></div>
+          
+            <figure id="fig-intarian_norm">
+              <img src="html_figures/intarian_norm.png" alt="INTARIAN — rebased to session open" loading="lazy" />
+              <figcaption>Each series starts at 0; typical net move is ~+1000 ticks × ~0.11 ≈ +1000 price points per session.</figcaption>
+            </figure>
+        </section>
+        <section id="detrend-example">
+          <h2>Linear trend + residuals (example day)</h2>
+          <div class="card"><p>ADF on raw mid fails (unit root) while ADF on <strong>linearly detrended</strong> mids rejects a unit root in the residual — consistent with “smooth drift + stationary band” within a session.</p></div>
+          
+            <figure id="fig-intarian_detrend">
+              <img src="html_figures/intarian_detrend.png" alt="Linear trend + residuals (example day)" loading="lazy" />
+              <figcaption>Example: day −2. Red line = OLS trend; lower panel = residuals.</figcaption>
+            </figure>
+        </section>
+        <section id="detrend-quarters">
+          <h2>Drift homogeneity across quarters</h2>
+          <div class="card"><p>Heatmap of mean one-tick price change by quarter of each session. If mean-reversion dominated halves, you would see sign flips; instead drift is positive in every cell.</p></div>
+          
+            <figure id="fig-quarter_heatmap">
+              <img src="html_figures/quarter_heatmap.png" alt="Drift homogeneity across quarters" loading="lazy" />
+              <figcaption>Quarters are by row index within each day (2500-tick bins on ~9200 rows).</figcaption>
+            </figure>
+        </section>
+        <section id="acf">
+          <h2>Autocorrelation at multiple return horizons</h2>
+          <div class="card"><p>Lag-k autocorrelation for 1-, 2-, and 5-tick <strong>mid</strong> returns. The 1-tick curve near −0.5 largely collapses when using 2-tick returns — consistent with microstructure bounce.</p></div>
+          
+            <figure id="fig-acf_multiscale">
+              <img src="html_figures/acf_multiscale.png" alt="Autocorrelation at multiple return horizons" loading="lazy" />
+              <figcaption>Left: ASH (peg). Right: INTARIAN.</figcaption>
+            </figure>
+        </section>
+        <section id="vr">
+          <h2>Variance ratios (log returns)</h2>
+          <div class="card"><p>VR &lt; 1 at short horizons indicates variance of multi-period returns lower than random-walk scaling — common under mean-reversion <em>in returns</em> or microstructure; interpret next to plots, not alone.</p></div>
+          
+            <figure id="fig-variance_ratio">
+              <img src="html_figures/variance_ratio.png" alt="Variance ratios (log returns)" loading="lazy" />
+              <figcaption>Bars below the red line (VR=1) are “MR-ish” under this test.</figcaption>
+            </figure>
+        </section>
+        <section id="hurst-ash">
+          <h2>R/S scaling on log returns — ASH</h2>
+          <div class="card"><p>Scatter of log segment length vs log mean R/S; slope ≈ Hurst exponent under classical R/S assumptions. Values are modest (~0.28–0.30) — not impossible Hurst values from mis-specified subsampled level series.</p></div>
+          
+            <figure id="fig-hurst_ash">
+              <img src="html_figures/hurst_ash.png" alt="R/S scaling on log returns — ASH" loading="lazy" />
+              <figcaption>ASH</figcaption>
+            </figure>
+        </section>
+        <section id="hurst-pepper">
+          <h2>R/S scaling on log returns — INTARIAN</h2>
+          <div class="card"></div>
+          
+            <figure id="fig-hurst_pepper">
+              <img src="html_figures/hurst_pepper.png" alt="R/S scaling on log returns — INTARIAN" loading="lazy" />
+              <figcaption>INTARIAN</figcaption>
+            </figure>
+        </section>
+        <section id="ash-dev">
+          <h2>ASH — peg deviation</h2>
+          <div class="card"><p>Deviation from 10 000 by day; ASH remains tightly anchored.</p></div>
+          
+            <figure id="fig-ash_dev">
+              <img src="html_figures/ash_dev.png" alt="ASH — peg deviation" loading="lazy" />
+              <figcaption>Deviation mid−10000.</figcaption>
+            </figure>
+        </section>
+        <section id="ash-spread">
+          <h2>ASH — L1 spread over time</h2>
+          <div class="card"></div>
+          
+            <figure id="fig-ash_spread">
+              <img src="html_figures/ash_spread.png" alt="ASH — L1 spread over time" loading="lazy" />
+              <figcaption>Wider spread segments correspond to thinner books or bot quote shifts.</figcaption>
+            </figure>
+        </section>
+        <section id="pepper-spread">
+          <h2>INTARIAN — L1 spread over time</h2>
+          <div class="card"><p>Spread width sets how much mid can bounce without true information; compare across days.</p></div>
+          
+            <figure id="fig-pepper_spread">
+              <img src="html_figures/pepper_spread.png" alt="INTARIAN — L1 spread over time" loading="lazy" />
+              <figcaption>Three sessions stacked.</figcaption>
+            </figure>
+        </section>
+        <section id="ash-churn">
+          <h2>ASH — quote churn vs tight inside band</h2>
+          <div class="card"><p>Rolling mean of “any L1 change” (blue) and rare “inside 9997–10003” band (orange), with mid deviation in grey.</p></div>
+          
+            <figure id="fig-ash_churn">
+              <img src="html_figures/ash_churn.png" alt="ASH — quote churn vs tight inside band" loading="lazy" />
+              <figcaption>High churn vs tutorial EMERALDS (~3%) — strategy must assume faster-moving L1.</figcaption>
+            </figure>
+        </section>
+        <section id="sig-hex">
+          <h2>INTARIAN — signal density plots</h2>
+          <div class="card"><p>Hexbin: (SMA10−mid) vs 5-tick forward move, and L1 imbalance vs 1-tick forward move. Correlations are partly mechanical from bounce; use for <em>relative</em> comparison of signal families.</p></div>
+          
+            <figure id="fig-pepper_signals">
+              <img src="html_figures/pepper_signals.png" alt="INTARIAN — signal density plots" loading="lazy" />
+              <figcaption>Pooled valid-L1 rows across all days (caveat: cross-day pooling for visuals only).</figcaption>
+            </figure>
+        </section>
+        <section id="sig-trades">
+          <h2>INTARIAN — market trade prices</h2>
+          <div class="card"><p>Histogram of transaction prices from <code>trades_round_1_*.csv</code> (bot prints).</p></div>
+          
+            <figure id="fig-pepper_trades">
+              <img src="html_figures/pepper_trades.png" alt="INTARIAN — market trade prices" loading="lazy" />
+              <figcaption>Transaction prices avoid mid bounce; distribution is informative for where bots actually print.</figcaption>
+            </figure>
+        </section>
+        <section id="cross">
+          <h2>Cross-product mids &amp; return scatter</h2>
+          <div class="card"><p>Joined on (day, timestamp) where both have valid L1. Level correlation is dominated by day dummies; return scatter shows weak short-horizon linkage.</p></div>
+          
+            <figure id="fig-cross_mids">
+              <img src="html_figures/cross_mids.png" alt="Cross-product mids &amp; return scatter" loading="lazy" />
+              <figcaption>Left: level scatter coloured by day. Right: concurrent returns.</figcaption>
+            </figure>
+        </section><section id="stats"><h2>Key numbers (auto)</h2><div class="card"><p>Quick snapshot from this run:</p><pre class="stats">Data: C:\Users\HP ZBOOK\Downloads\IMC Prosperity\prosperity4\ROUND1
+Valid L1 rows ASH: 27644  INTARIAN: 27688
+INTARIAN day -2: start 9998.50 end 11001.50 mean_tick_dr +0.10884
+INTARIAN day -1: start 10998.50 end 11998.00 mean_tick_dr +0.10843
+INTARIAN day 0: start 11998.50 end 13000.00 mean_tick_dr +0.10825
+INTARIAN pooled lag-1 acf(1-tick mid ret): -0.4882
+ASH Hurst R/S log-ret: 0.280
+INTARIAN Hurst R/S log-ret: 0.295</pre></div></section><section id="legacy"><h2>Figures from round1_deep_dive.py</h2><div class="card"><p>Earlier pipeline outputs (same folder parent):</p></div><figure><img src="../intarian_mid_3days.png" alt="legacy_intarian_3d" loading="lazy" /></figure><figure><img src="../ash_trade_prices.png" alt="legacy_ash_trades" loading="lazy" /></figure><figure><img src="../ash_trade_minus_mid.png" alt="legacy_ash_trademid" loading="lazy" /></figure><figure><img src="../ash_l1_histograms.png" alt="legacy_ash_l1" loading="lazy" /></figure></section>
+</main><footer>Generated 2026-04-14 20:51 UTC · Open this file from disk; figures live alongside in <code>html_figures/</code>.</footer></body></html>
