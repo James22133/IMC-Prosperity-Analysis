@@ -7,3 +7,4 @@ _*.py
 _*.txt
 data/
 prosperity4/backtests/
+prosperity4/analysis_output/
